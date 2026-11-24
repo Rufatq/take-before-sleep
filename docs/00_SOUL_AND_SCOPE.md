@@ -5,15 +5,15 @@
 *(Opus Gate 1 lock: reads like an authentic pharmacy label instruction, searchable on Steam, and quietly turns into an unsettling question by Night III: whose sleep, and what happens during it?)*
 
 ## Emotional Alchemy (Strictly Non-Literal)
-- **Anchor A (Quiet Human Grace Under Cold Night Rain):** Never depicted literally (no bus, thermos, tea, or wet socks). Translated into unbilled care folded silently into wax-paper wraps, holding the brass curb lamp steady across freezing wet rain while a stranger steps away, and never asking for gratitude.
-- **Anchor B (Domestic Precision Turning Quietly Wrong):** Never depicted literally (no kitchen, refrigerator, cutlery drawer, spoons, or door chain). Zero gore, zero monsters, zero glitch-slop. You haven't slept properly since the person you shared the night shift with died. The dread is losing track of your own hours during microsleeps—discovering orderly, faintly warm rearrangements inside a deadbolted booth that *you* made without remembering.
+- **Anchor A (Quiet Human Grace Under Cold Night Rain):** Never depicted literally (no bus, thermos, tea, wet socks, or headlights lighting a street). Translated strictly into unbilled care folded silently into wax-paper wraps, warming the recessed hatch sill with the brass lamp while a stranger counts wet coins, and never asking for gratitude.
+- **Anchor B (Domestic Precision Turning Quietly Wrong):** Never depicted literally (no kitchen, refrigerator, cutlery drawer, spoons, door chain, `03:14`, objects turned backward/by size, or still-warm objects). Zero gore, zero monsters, zero glitch-slop. You haven't slept properly since the person you shared the night shift with died. The dread is losing track of your own hours during microsleeps—discovering orderly, pharmacy-native proof inside a deadbolted booth (uncorked stoppers beside loose tablets, fresh wet-sheen crimson blotter stamps, unremembered chalk tallies, a pre-stamped packet inside the drawer) that *you* made without remembering.
 
 ## Locked Core Mechanic: The Optical Glass Membrane
 The entire game lives inside one seated perspective behind a corner pharmacy night hatch (*Notdienstschalter*).
 1. **Three-State Brass Lamp Hood (Discrete Clicks / Keys `1`, `2`, `3`):**
-   - `COUNTER`: Warm sodium tungsten lights scripts, bottles, slate groove, and stamp (covering <= 30% of frame; corners fall to true `#0B0A0E`), **but turns the laminated glass into a semi-mirror** showing a faint ghost reflection of your own back shelves—the ONLY place where turned-around bottle anomalies first appear.
+   - `COUNTER`: Warm sodium tungsten lights scripts, bottles, slate groove, and stamp (covering <= 30% of frame; corners fall to true `#0B0A0E`), **but turns the laminated glass into a semi-mirror** showing a faint ghost reflection of your own back shelves—the ONLY place where uncorked stoppers and unremembered shelf tallies first appear.
    - `DIM`: Interior collapses into `4%` velvet dark; **glass becomes transparent**, revealing the stranger's rim-lit hood, wet cuffs, trembling hands, and the rain-slick street (including whether the corner streetlamp across the lane is still flickering or newly steady).
-   - `CURB`: Tilts the brass hood outward, throwing a warm amber blade onto the wet exterior sill and pavement niche—the silent grace gesture.
+   - `SILL`: Tilts the brass hood outward, throwing a feathered warm sodium glow across the recessed stone sill and chilled rain glass—the silent grace gesture.
 2. **Spring-Loaded Hold-to-Talk Intercom (`Space` / Hold Brass Grille):**
    - Release (`OFF`): Muffled rain bass; clear interior micro-foley (50Hz ballast buzz, ceramic pill clacks, waxed paper crease, back-shelf settling clicks).
    - Hold (`ON`): Band-limited brass grille opens street rain and visitor voice. **You cannot hold-to-talk and dispense at the same time**—that physical hand cost creates real human tension.

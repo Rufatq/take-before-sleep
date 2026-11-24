@@ -1,9 +1,4 @@
-// VACUUM LAYER 01 (Opus Gate 2 Upgraded):
-// - Cold #1A2230 glass underpaint
-// - 120px radial #34404C mist backlight behind visitor silhouette (so visitor cuts cleanly in #0B0A0E!)
-// - Noisy radial sodium streetlamp bloom (no clean digital disk!)
-// - Vertical wet-asphalt smears 4-6x taller than wide broken by noisy horizontal rain ripples (zero stair steps!)
-// - Pulled-down halved muted verdigris cross (#2F6B62) + Rotated FBM halftone strictly exterior.
+// VACUUM LAYER 01 (Phase 2 — Dynamic 4-Night Storm & Dawn Atmosphere + Tomas's Steady Lamp Consequence)
 
 import { GameState } from '../core/state';
 import { PALETTE, rgbCss } from '../core/palette';
@@ -14,8 +9,12 @@ export const HATCH_RECT = { x: 184, y: 44, w: 912, h: 422 };
 
 export function renderLayer01Street(ctx: CanvasRenderingContext2D, st: GameState, W: number, H: number): void {
   const { x, y, w, h } = HATCH_RECT;
-  const isDawn = st.beat === 'night1_dawn_latch';
-  const isNight2 = st.beat === 'night2_preview';
+  const isDawn =
+    st.beat === 'n1_dawn' ||
+    st.beat === 'n2_dawn' ||
+    st.beat === 'n3_dawn' ||
+    st.beat === 'n4_dawn_packet' ||
+    st.beat === 'ending_dawn';
   const boil = st.boilTick;
 
   ctx.save();
@@ -23,8 +22,13 @@ export function renderLayer01Street(ctx: CanvasRenderingContext2D, st: GameState
   ctx.rect(x - 2, y - 2, w + 4, h + 4);
   ctx.clip();
 
-  // 1. Cold #1A2230 glass-side underpaint & wet storm sky (Gate 2 lock!)
-  const skyCol = isDawn ? { r: 36, g: 48, b: 62 } : PALETTE.rainIndigo;
+  // 1. Cold #1A2230 glass-side underpaint & wet storm sky (paling slightly at 04:48..05:00 dawn)
+  const skyCol =
+    st.beat === 'ending_dawn'
+      ? { r: 58, g: 72, b: 86 }
+      : isDawn
+        ? { r: 36, g: 48, b: 62 }
+        : PALETTE.rainIndigo;
   dryChalkPoly(
     ctx,
     [
@@ -56,8 +60,7 @@ export function renderLayer01Street(ctx: CanvasRenderingContext2D, st: GameState
     { underpaint: PALETTE.velvetDark, pressure: 0.92, peek: 0.22, edgeRough: 1.2, boilSeed: boil }
   );
 
-  // 2. Backlight halo (#34404C, 120px radial) behind visitor head/shoulders (Opus Gate 2 lock!)
-  // Lifts rain mist just enough behind the coat so the visitor cuts out cleanly in #0B0A0E!
+  // 2. Backlight halo (#34404C, 120px radial) behind visitor head/shoulders
   if (st.visitor !== 'none' && st.visitorPresence.value > 0.05) {
     const pres = clamp(st.visitorPresence.value, 0, 1);
     const vcx = x + w * 0.44 - (1 - pres) * 145;
@@ -81,7 +84,7 @@ export function renderLayer01Street(ctx: CanvasRenderingContext2D, st: GameState
       { x: x + w, y: y + h + 2 },
       { x: x, y: y + h + 2 },
     ],
-    isDawn ? { r: 40, g: 50, b: 62 } : { r: 20, g: 28, b: 40 },
+    isDawn ? { r: 42, g: 52, b: 64 } : { r: 20, g: 28, b: 40 },
     { underpaint: PALETTE.glassUnderpaint, pressure: 0.88, peek: 0.32, edgeRough: 1.0, boilSeed: boil }
   );
 
@@ -109,7 +112,7 @@ export function renderLayer01Street(ctx: CanvasRenderingContext2D, st: GameState
     { underpaint: PALETTE.velvetDark, pressure: 0.92, peek: 0.25, edgeRough: 1.2, boilSeed: boil }
   );
 
-  // 3. Pulled-down halved Muted Verdigris Pharmacy Cross (#2F6B62) + vertical wet-street smear!
+  // 3. Pulled-down halved Muted Verdigris Pharmacy Cross (#2F6B62) + vertical wet-street smear
   const crossX = x + 158;
   const crossY = y + 116;
   const vg = clamp(st.dna.verdigrisGlow, 0, 2.5);
@@ -126,14 +129,13 @@ export function renderLayer01Street(ctx: CanvasRenderingContext2D, st: GameState
     ctx.fillRect(crossX - 5, crossY - 15, 10, 30);
     ctx.fillRect(crossX - 15, crossY - 5, 30, 10);
 
-    // Vertical wet-asphalt smear (5x taller than wide, broken by noisy horizontal rain ripples!)
     drawVerticalStreetSmear(ctx, crossX + 4, y + 292, 18, 102, PALETTE.verdigrisCross, 0.28 * Math.min(1.4, vg), boil + 11, st.simTime);
   }
 
-  // 4. Corner Sodium Streetlamp (FLICKERS Night I; STEADY Night II if Tomas graced!)
+  // 4. Corner Sodium Streetlamp (FLICKERS Night I; STEADY Nights II..IV if Tomas graced!)
   const poleX = x + 742;
   const lampY = y + 92;
-  const isSteady = isNight2 && st.tomasGraced;
+  const isSteady = st.nightNum >= 2 && st.tomasGraced;
   let polePower = 1.0;
   if (!isSteady && !isDawn) {
     const phase = st.simTime * 3.7;
@@ -142,7 +144,7 @@ export function renderLayer01Street(ctx: CanvasRenderingContext2D, st: GameState
     else if (stutter < 0.24) polePower = 0.62;
     else polePower = 0.88 + 0.1 * Math.sin(phase);
   } else if (isDawn) {
-    polePower = 0.38;
+    polePower = st.beat === 'ending_dawn' ? 0.28 : 0.44;
   }
 
   dipPenRibbon(
@@ -157,14 +159,13 @@ export function renderLayer01Street(ctx: CanvasRenderingContext2D, st: GameState
     { taperMode: 'velocity', inkPool: true, jitter: 0.6, seed: boil + 5 }
   );
 
-  // Noisy broken sodium bloom halo (Opus Gate 2: NOT a clean circular disk!)
+  // Noisy broken sodium bloom halo
   const lampHeadX = poleX - 26;
   const lampHeadY = lampY + 2;
   const haloR = (108 + (isSteady ? 24 : 0)) * (0.72 + 0.28 * polePower);
-  // Core warm filament glow + 9 noise-offset feathered puffs breaking radial perfection
   for (let p = 0; p < 9; p++) {
     const ang = (p / 9) * Math.PI * 2 + hash2(p, boil, 19) * 0.5;
-    const dist = p === 0 ? 0 : (14 + hash2(p, 2, 19) * 32);
+    const dist = p === 0 ? 0 : 14 + hash2(p, 2, 19) * 32;
     const pr = p === 0 ? haloR * 0.62 : haloR * (0.42 + hash2(p, 3, 19) * 0.36);
     const px = lampHeadX + Math.cos(ang) * dist;
     const py = lampHeadY + Math.sin(ang) * dist * 0.85;
@@ -178,7 +179,6 @@ export function renderLayer01Street(ctx: CanvasRenderingContext2D, st: GameState
     ctx.fill();
   }
 
-  // Vertical Wet-Asphalt Sodium Smear (Opus Gate 2: 4-6x taller than wide, broken by noisy horizontal rain ripples!)
   drawVerticalStreetSmear(ctx, lampHeadX, y + 290, 26, 134, PALETTE.sodiumLamp, 0.46 * polePower, boil + 31, st.simTime);
   drawVerticalStreetSmear(ctx, lampHeadX - 38, y + 298, 14, 88, PALETTE.amberRim, 0.22 * polePower, boil + 37, st.simTime);
 
@@ -194,10 +194,10 @@ export function renderLayer01Street(ctx: CanvasRenderingContext2D, st: GameState
   }
 
   // 6. Rotated-Octave FBM (36.87 deg) + Ordered Halftone Storm Screen (EXTERIOR ONLY)
-  rainHalftoneScreen(ctx, x, y, w, h, { r: 150, g: 176, b: 198 }, st.dna.halftoneStrength, st.simTime, 11);
+  rainHalftoneScreen(ctx, x, y, w, h, { r: 150, g: 176, b: 198 }, st.dna.halftoneStrength * st.weatherIntensity, st.simTime, 11);
 
-  // 7. Smooth 60fps slanting exterior winter rain streaks
-  const rainCount = Math.floor(82 * clamp(st.dna.rainDensity, 0, 2.5));
+  // 7. Smooth 60fps slanting exterior winter rain streaks scaling with night storm intensity!
+  const rainCount = Math.floor(82 * clamp(st.dna.rainDensity * st.weatherIntensity, 0, 2.8));
   ctx.lineCap = 'round';
   for (let i = 0; i < rainCount; i++) {
     const rxBase = hash2(i, 1, 88) * (w + 140) - 70;
@@ -219,7 +219,6 @@ export function renderLayer01Street(ctx: CanvasRenderingContext2D, st: GameState
     ctx.stroke();
   }
 
-  // Masonry dip-pen niche corner lines
   dipPenRibbon(ctx, [{ x: x + 64, y: y + 22 }, { x: x + 64, y: y + h }], 3.0, PALETTE.velvetDark, {
     taperMode: 'velocity',
     jitter: 0.6,
@@ -236,7 +235,6 @@ export function renderLayer01Street(ctx: CanvasRenderingContext2D, st: GameState
   void H;
 }
 
-// Vertical wet-asphalt reflection column (4-6x taller than wide) fractured by noisy horizontal rain ripples!
 function drawVerticalStreetSmear(
   ctx: CanvasRenderingContext2D,
   cx: number,
@@ -248,7 +246,6 @@ function drawVerticalStreetSmear(
   seed: number,
   t: number
 ): void {
-  // Base faint vertical sheen wash
   const vg = ctx.createLinearGradient(cx, topY, cx, topY + height);
   vg.addColorStop(0, rgbCss(color, alpha * 0.52));
   vg.addColorStop(0.65, rgbCss(color, alpha * 0.24));
@@ -256,13 +253,12 @@ function drawVerticalStreetSmear(
   ctx.fillStyle = vg;
   ctx.fillRect(cx - width * 0.45, topY, width * 0.9, height);
 
-  // Horizontal noisy rain-ripple slices breaking the vertical column organically
   const slices = Math.floor(height / 5);
   for (let i = 0; i < slices; i++) {
     const sy = topY + i * 5 + (hash2(i, seed, 41) - 0.5) * 2.5;
     const u = i / Math.max(1, slices);
     const n = fbmRot(cx * 0.03 + u * 2.2, i * 0.45 + t * 0.7, 2, seed + 5);
-    if (n < 0.36) continue; // Raindrop ripple gap breaks column!
+    if (n < 0.36) continue;
     const spread = width * (0.45 + u * 0.95) * (0.55 + n * 0.85);
     const ox = (hash2(i, seed, 73) - 0.5) * width * 0.8;
     gouacheBristle(ctx, cx + ox - spread * 0.5, sy, cx + ox + spread * 0.5, sy + 0.8, 3.2, color, {

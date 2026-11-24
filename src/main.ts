@@ -1,4 +1,5 @@
-// TAKE BEFORE SLEEP — Entry, Deterministic Dual-Clock Loop, Exact 60fps Stamp Choreography & window.D Harness
+// TAKE BEFORE SLEEP — Complete 4-Night Living Arc, Exact 60fps Microsleep & Stamp Choreography,
+// Halvorsen Dawn Resolution, Hidden Calibration Lab, and Deterministic window.D QA Harness.
 
 import {
   createInitialState,
@@ -12,7 +13,7 @@ import { StageCompositor, STAGE_W, STAGE_H } from './render/compositor';
 import { CalibrationLab } from './render/labOverlay';
 import { FoleyEngine, AudioStemId } from './audio/foley';
 import { INTERCOM_GRILLE } from './layers/layer03_glass';
-import { DRAWER_HANDLE_RECT, SHUTTER_LATCH_RECT } from './layers/layer04_booth';
+import { DRAWER_HANDLE_RECT, SHUTTER_LATCH_RECT, HALVORSEN_PACKET_HIT } from './layers/layer04_booth';
 import { BOTTLE_RACK_HIT } from './layers/layer05_bottles';
 import {
   LAMP_HOOD_HIT,
@@ -33,7 +34,6 @@ const foley = new FoleyEngine();
 const params = new URLSearchParams(window.location.search);
 if (params.get('lab') === '1') {
   st.labOpen = true;
-  // On mobile <=980px default to collapsed side pull-tab so playable booth fills viewport cleanly first!
   st.labMobileOpen = window.innerWidth > 980;
 }
 
@@ -77,11 +77,22 @@ function inRect(px: number, py: number, r: { x: number; y: number; w: number; h:
   return px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h;
 }
 
+function isDawnShutterReady(): boolean {
+  return (
+    st.beat === 'n1_dawn' ||
+    st.beat === 'n2_dawn' ||
+    st.beat === 'n3_dawn' ||
+    st.beat === 'n4_dawn_packet'
+  );
+}
+
 function hitTestZone(x: number, y: number): string {
   if (st.beat === 'title') return 'title_start';
+  if (st.beat === 'ending_dawn') return 'ending_restart';
+  if (st.halvorsenPacketInDrawer && !st.tookDawnPacket && inRect(x, y, HALVORSEN_PACKET_HIT)) return 'dawn_packet';
   if (Math.hypot(x - INTERCOM_GRILLE.cx, y - INTERCOM_GRILLE.cy) <= INTERCOM_GRILLE.r + 8) return 'intercom';
   if (inRect(x, y, LAMP_HOOD_HIT)) return 'lamp';
-  if (inRect(x, y, SHUTTER_LATCH_RECT) && st.beat === 'night1_dawn_latch') return 'shutter';
+  if (inRect(x, y, SHUTTER_LATCH_RECT) && isDawnShutterReady()) return 'shutter';
   if (inRect(x, y, DRAWER_HANDLE_RECT)) return 'drawer';
   if (inRect(x, y, BOTTLE_RACK_HIT)) return 'bottle';
   if (inRect(x, y, GRACE_TIN_HIT)) return 'grace';
@@ -97,17 +108,18 @@ function setLampMode(mode: LampMode): void {
   if (st.lampMode === mode) return;
   st.lampMode = mode;
   st.lampAngle.target = mode === 'COUNTER' ? 0 : mode === 'DIM' ? 1 : 2;
+  st.lampAngle.impulse(mode === 'SILL' ? 1.5 : -1.0);
   st.lampGlow.target = mode === 'COUNTER' ? 1 : mode === 'DIM' ? 0.08 : 0.78;
   foley.playLampClick(mode !== 'DIM');
 }
 
 function cycleLampMode(): void {
-  const order: LampMode[] = ['COUNTER', 'DIM', 'CURB'];
+  const order: LampMode[] = ['COUNTER', 'DIM', 'SILL'];
   setLampMode(order[(order.indexOf(st.lampMode) + 1) % order.length]);
 }
 
 function toggleIntercom(held: boolean): void {
-  if (st.beat === 'title') return;
+  if (st.beat === 'title' || st.beat === 'ending_dawn') return;
   if (st.intercomHeld === held) return;
   st.intercomHeld = held;
   st.intercomSpring.target = held ? 1 : 0;
@@ -115,8 +127,8 @@ function toggleIntercom(held: boolean): void {
     st.bottleTilting = false;
     st.bottleTilt.target = 0;
     st.dialogueReveal = 0.08;
-    const tone = st.visitor === 'tomas' ? 'tomas' : 'maren';
-    foley.setIntercom(true, st.visitor !== 'none' ? tone : undefined);
+    const tone = st.visitor !== 'none' ? st.visitor : undefined;
+    foley.setIntercom(true, tone);
   } else {
     foley.setIntercom(false);
     if (st.visitorLines.length > 1) {
@@ -125,8 +137,17 @@ function toggleIntercom(held: boolean): void {
   }
 }
 
+function takeHalvorsenPacket(): void {
+  if (!st.halvorsenPacketInDrawer || st.tookDawnPacket) return;
+  st.tookDawnPacket = true;
+  st.dawnPacketAnim.target = 1;
+  foley.playPaperFold(true);
+}
+
 function toggleDrawer(): void {
-  if (st.beat === 'title' || st.intercomHeld) return;
+  if (st.beat === 'title' || st.beat === 'ending_dawn' || st.intercomHeld) return;
+
+  // Special Night IV non-dispensing exchanges (Tomas's 40 cents / Halvorsen's Night IV script)
   if (!st.drawerIn) {
     st.drawerIn = true;
     st.drawerPos.target = 1;
@@ -140,19 +161,23 @@ function toggleDrawer(): void {
     st.reviewScriptOpen = false;
     foley.playDrawerSlide(false);
 
-    if (st.packetInDrawer && !st.handedOver) {
+    const canFinishNoDispense = Boolean(st.script?.noDispense && st.paperSlide > 0.35);
+    const canFinishSelf = Boolean(st.script?.selfWritten && (st.stamped || st.paperSlide > 0.5));
+    if ((st.packetInDrawer || canFinishNoDispense || canFinishSelf) && !st.handedOver) {
       st.handedOver = true;
-      const graced = st.graceTucked || st.lampMode === 'CURB' || st.curbHoldTimer > 0.35;
-      if (st.beat === 'night1_maren' && graced) st.marenGraced = true;
-      else if (st.beat === 'night1_tomas') st.tomasGraced = true;
+      const graced = st.graceTucked || st.lampMode === 'SILL' || st.sillHoldTimer > 0.35;
+      if (st.beat === 'n1_maren' && graced) st.marenGraced = true;
+      else if (st.beat === 'n1_tomas') st.tomasGraced = true;
+      else if ((st.beat === 'n2_nadia' || st.beat === 'n3_nadia') && graced) st.nadiaGraced = true;
+      else if (st.beat === 'n2_halvorsen' && graced) st.halvorsenGraced = true;
       st.visitorPresence.target = 0;
     }
   }
 }
 
 function startPourPill(): void {
-  if (st.intercomHeld || !st.script || !st.drawerIn || st.paperFold > 0.4 || st.stamped) return;
-  if (!st.bottleTilting) foley.playBottleRattle();
+  if (st.intercomHeld || !st.script || st.script.noDispense || !st.drawerIn || st.paperFold > 0.4 || st.stamped) return;
+  if (!st.bottleTilting) foley.playPropPour(st.activeProp);
   st.bottleTilting = true;
   st.bottleTilt.target = 1;
 }
@@ -163,8 +188,8 @@ function stopPourPill(): void {
 }
 
 function spawnOnePill(): void {
-  if (!st.script) return;
-  const maxPills = Math.min(st.script.pillsNeeded + 1, 5);
+  if (!st.script || st.script.noDispense) return;
+  const maxPills = Math.min(st.script.dosesNeeded + 1, 5);
   if (st.pills.length >= maxPills) {
     stopPourPill();
     return;
@@ -173,6 +198,7 @@ function spawnOnePill(): void {
   const id = slot + 1;
   st.pills.push({
     id,
+    kind: st.activeProp,
     x: 806 + (hash2(id, st.boilTick, 17) - 0.5) * 14,
     y: 526,
     vx: -48 - slot * 24 + (hash2(id, 3, 29) - 0.5) * 18,
@@ -186,22 +212,21 @@ function spawnOnePill(): void {
 }
 
 function tuckUnbilledGrace(): void {
-  if (st.intercomHeld || !st.script || !st.drawerIn || st.paperFold > 0.4 || st.graceTucked) return;
+  if (st.intercomHeld || !st.script || st.script.noDispense || !st.drawerIn || st.paperFold > 0.4 || st.graceTucked) return;
   st.graceTucked = true;
   st.graceAnim.target = 1;
   foley.playPaperFold(true);
 }
 
 function completePaperFold(): void {
-  if (!st.script || !st.drawerIn || st.pills.length < st.script.pillsNeeded || st.paperFold >= 0.99) return;
+  if (!st.script || st.script.noDispense || !st.drawerIn || st.pills.length < st.script.dosesNeeded || st.paperFold >= 0.99) return;
   st.paperFold = 1;
   st.paperFoldSpring.target = 1;
   foley.playPaperFold(false);
 }
 
-// Start exact 60fps Stamp Choreography (f0..f4 wind-up -> f5..f9 strike -> f10 EXACT CONTACT -> f10..f13 hitstop -> f14..f20 recoil!)
 function slamStamp(): void {
-  if (st.intercomHeld || !st.script || !st.drawerIn || st.paperFold < 0.85 || st.stamped || st.stampChoreo.active) return;
+  if (st.intercomHeld || !st.script || st.script.noDispense || !st.drawerIn || st.paperFold < 0.85 || st.stamped || st.stampChoreo.active) return;
   st.stampChoreo.active = true;
   st.stampChoreo.frame = 0;
   st.stampChoreo.accum = 0;
@@ -212,20 +237,22 @@ function slamStamp(): void {
 }
 
 function closeDawnShutter(): void {
-  if (st.beat !== 'night1_dawn_latch') return;
+  if (!isDawnShutterReady() || st.shutterClosing) return;
+  st.shutterClosing = true;
+  st.shutterProgress = 0;
   st.shutterClosed.target = 1;
-  foley.playDrawerSlide(false);
+  foley.playShutterDescent(st.beat === 'n4_dawn_packet');
 }
 
 function beginFromTitle(): void {
   if (st.beat !== 'title') return;
   st.bayerTransition = 1;
-  enterBeat(st, 'night1_maren');
+  enterBeat(st, 'n1_maren');
   foley.playLampClick(true);
 }
 
 // ----------------------------------------------------------------------
-// DETERMINISTIC FIXED-STEP SIMULATION UPDATE
+// EXACT 60FPS STAMP & MICROSLEEP CHOREOGRAPHERS (OPUS GATE 2 & GATE 3 LOCKS!)
 // ----------------------------------------------------------------------
 function advanceStamp60Hz(): void {
   const ch = st.stampChoreo;
@@ -234,15 +261,12 @@ function advanceStamp60Hz(): void {
   ch.invertFlash = false;
 
   if (ch.frame === 10) {
-    // EXACT CONTACT FRAME f10 (Opus Gate 2 lock!):
-    // Seal prints NOW, 1-frame inverted patch around seal, 4-frame hitstop (f10..f13), +8ms thud audio!
     st.stamped = true;
     ch.invertFlash = true;
     ch.hitstopLeft = 4;
     ch.cardShakeX = 2.0;
     foley.playStampImpact();
   } else if (ch.frame >= 11 && ch.frame <= 13) {
-    // f11..13: card-only +-2px horizontal shake decaying monotonically across hitstop!
     const decay = (14 - ch.frame) / 4;
     ch.cardShakeX = (ch.frame % 2 === 1 ? -2.0 : 2.0) * decay;
   } else {
@@ -257,10 +281,102 @@ function advanceStamp60Hz(): void {
   }
 }
 
+function advanceMicrosleep60Hz(): void {
+  const ms = st.microsleep;
+  if (!ms.active) return;
+  const f = ms.frame;
+
+  if (f === 0) {
+    // f0: Hush onset (digital zero silence across all buses for 95ms!)
+    if (!ms.interruptedByKnock) foley.playAnomalyHush();
+  }
+
+  if (ms.interruptedByKnock) {
+    // NIGHT IV VARIANT: f0-5 hush -> f6 4/16 -> f7 10/16 -> HALVORSEN SINGLE KNUCKLE REVERSES BLINK!
+    if (f <= 5) {
+      ms.lidAmount = 0;
+    } else if (f === 6) {
+      ms.lidAmount = 4 / 16;
+      st.cameraPitch.target = -0.4;
+    } else if (f === 7) {
+      ms.lidAmount = 10 / 16;
+      st.cameraPitch.target = -1.1;
+      ms.knockFlash = 1.0;
+      foley.playGlassKnock(); // Someone kept you awake!
+    } else if (f === 8) {
+      ms.lidAmount = 4 / 16; // Reverses open! Clock NEVER moves!
+      st.cameraPitch.target = 0.12;
+    } else if (f >= 9) {
+      ms.lidAmount = 0;
+      st.cameraPitch.target = 0;
+    }
+    if (f >= 22) {
+      ms.active = false;
+      ms.frame = -1;
+      ms.lidAmount = 0;
+      return;
+    }
+  } else {
+    // STANDARD MICROSLEEP BLINK (Opus Gate 3 exact frame table f0..f29):
+    if (f <= 5) {
+      ms.lidAmount = 0;
+    } else if (f === 6) {
+      ms.lidAmount = 4 / 16;
+      st.cameraPitch.target = -0.4;
+    } else if (f === 7) {
+      ms.lidAmount = 10 / 16;
+      st.cameraPitch.target = -1.1;
+    } else if (f === 8) {
+      ms.lidAmount = 1.0; // 16/16 black — CLOCK SNAPS instantly with no tween!
+      st.clockDisplay = ms.targetClock;
+    } else if (f === 9) {
+      ms.lidAmount = 1.0; // 16/16 black — PROP SWAP happens!
+      if (!ms.swapped) {
+        ms.swapped = true;
+        st.uncorkedBottles = [...ms.targetUncorked];
+        st.ledgerTallies = ms.targetLedgerTallies;
+        if (ms.targetBlotterStamp) {
+          st.blotterStampTime = ms.targetBlotterStamp;
+          st.wetInkSheen = 1.0;
+        }
+        if (ms.targetInkThumbprint) st.inkThumbprint = true;
+        if (ms.targetOpenDrawerInside) {
+          // Drawer sits 2 inches open from INSIDE holding pre-stamped 03:01 packet + own-hand script!
+          st.drawerIn = true;
+          st.preStampedPacketInTray = true;
+          st.drawerPos.snap(0.46);
+          st.drawerPos.target = 0.46;
+          st.paperSlide = 1.0;
+        }
+      }
+    } else if (f === 10) {
+      ms.lidAmount = 10 / 16;
+      st.cameraPitch.target = -0.6;
+    } else if (f === 11) {
+      ms.lidAmount = 4 / 16;
+      st.cameraPitch.target = 0.15; // 2-frame upward overshoot!
+    } else if (f >= 12) {
+      ms.lidAmount = 0;
+      st.cameraPitch.target = 0; // Settles via damped spring zeta 0.55
+    }
+    if (f >= 29) {
+      ms.active = false;
+      ms.frame = -1;
+      ms.lidAmount = 0;
+      return;
+    }
+  }
+
+  ms.frame++;
+}
+
+// ----------------------------------------------------------------------
+// DETERMINISTIC FIXED-STEP SIMULATION UPDATE
+// ----------------------------------------------------------------------
 function stepSim(dt: number): void {
   const cdt = Math.min(dt, 1 / 24);
 
-  // Step exact 60fps stamp choreography accumulator
+  // Step 60fps stamp choreography
   if (st.stampChoreo.active) {
     st.stampChoreo.accum += cdt;
     while (st.stampChoreo.accum >= 1 / 60 - 1e-6 && st.stampChoreo.active) {
@@ -269,8 +385,19 @@ function stepSim(dt: number): void {
     }
   }
 
-  // During 4-frame stamp hitstop (f10..f13), hold world physics still while card shakes +-2px!
-  if (st.stampChoreo.active && st.stampChoreo.frame >= 10 && st.stampChoreo.frame <= 13) {
+  // Step 60fps microsleep choreography
+  if (st.microsleep.active) {
+    st.microsleep.accum += cdt;
+    while (st.microsleep.accum >= 1 / 60 - 1e-6 && st.microsleep.active) {
+      st.microsleep.accum -= 1 / 60;
+      advanceMicrosleep60Hz();
+    }
+  }
+
+  // Hold world during 4-frame stamp hitstop (f10..f13) OR f0..f5 microsleep hush freeze!
+  const inStampHitstop = st.stampChoreo.active && st.stampChoreo.frame >= 10 && st.stampChoreo.frame <= 13;
+  const inMicrosleepHush = st.microsleep.active && st.microsleep.frame >= 0 && st.microsleep.frame <= 5;
+  if (inStampHitstop || inMicrosleepHush) {
     st.simTime += cdt;
     return;
   }
@@ -278,6 +405,18 @@ function stepSim(dt: number): void {
   st.simTime += cdt;
   st.beatTime += cdt;
   if (st.copyDiffFlash > 0) st.copyDiffFlash = Math.max(0, st.copyDiffFlash - cdt);
+  if (st.nightCardTimer > 0) st.nightCardTimer = Math.max(0, st.nightCardTimer - cdt);
+  if (st.microsleep.knockFlash > 0) st.microsleep.knockFlash = Math.max(0, st.microsleep.knockFlash - cdt * 2.8);
+
+  // 40-second fresh vermilion ink drying sheen decay on unremembered blotter stamp
+  if (st.wetInkSheen > 0) st.wetInkSheen = Math.max(0, st.wetInkSheen - cdt / 40);
+
+  // Nadia's fingertip glass fog ovals fade over 3s once she steps back
+  if (st.visitor === 'nadia' && st.visitorPresence.value > 0.7) {
+    st.nadiaFogAlpha = Math.min(1, st.nadiaFogAlpha + cdt * 1.2);
+  } else if (st.nadiaFogAlpha > 0) {
+    st.nadiaFogAlpha = Math.max(0, st.nadiaFogAlpha - cdt / 3.0);
+  }
 
   st.boilTick = Math.floor(st.simTime * clamp(st.dna.boilFps, 2, 24));
 
@@ -292,10 +431,19 @@ function stepSim(dt: number): void {
   st.drawerPos.step(cdt);
   st.bottleTilt.step(cdt);
   st.graceAnim.step(cdt);
+  st.dawnPacketAnim.step(cdt);
   st.paperFoldSpring.step(cdt);
-  st.shutterClosed.step(cdt);
+  st.cameraPitch.step(cdt);
 
-  // Smooth 10-frame (~0.42s @ 24fps) ease-out counter card slide from under steel lip (Opus Gate 2 lock!)
+  // 1.4s exact corrugated steel shutter descent
+  if (st.shutterClosing) {
+    st.shutterProgress = Math.min(1, st.shutterProgress + cdt / 1.4);
+    st.shutterClosed.snap(st.shutterProgress);
+  } else {
+    st.shutterClosed.step(cdt);
+  }
+
+  // Smooth 10-frame ease-out counter card slide
   if (st.script && st.drawerIn && !st.packetInDrawer && !st.handedOver) {
     st.paperSlide = Math.min(1, st.paperSlide + cdt / (10 / 24));
   } else if (!st.drawerIn) {
@@ -306,19 +454,20 @@ function stepSim(dt: number): void {
     st.dialogueReveal = Math.min(1, st.dialogueReveal + cdt * 0.92);
   }
 
-  if (st.lampMode === 'CURB' && st.visitor !== 'none') {
-    st.curbHoldTimer += cdt;
-    if (st.handedOver && st.beat === 'night1_maren') st.marenGraced = true;
-    if (st.handedOver && st.beat === 'night1_tomas') st.tomasGraced = true;
+  if (st.lampMode === 'SILL' && st.visitor !== 'none') {
+    st.sillHoldTimer += cdt;
+    if (st.handedOver && st.beat === 'n1_maren') st.marenGraced = true;
+    if (st.handedOver && st.beat === 'n1_tomas') st.tomasGraced = true;
+    if (st.handedOver && (st.beat === 'n2_nadia' || st.beat === 'n3_nadia')) st.nadiaGraced = true;
+    if (st.handedOver && st.beat === 'n2_halvorsen') st.halvorsenGraced = true;
   }
 
-  // Bottle pour cadence (fast & crisp <= 1.2s for 2-3 pills)
   if (st.bottleTilting && st.bottleTilt.value > 0.56) {
     st.pourCooldown -= cdt;
     if (st.pourCooldown <= 0) {
       spawnOnePill();
       st.pourCooldown = 0.36;
-      if (st.script && st.pills.length >= st.script.pillsNeeded) {
+      if (st.script && st.pills.length >= st.script.dosesNeeded) {
         stopPourPill();
       }
     }
@@ -331,13 +480,12 @@ function stepSim(dt: number): void {
     p.x += p.vx * cdt;
     p.y += p.vy * cdt;
     p.rot += p.vrot * cdt;
-
     const targetX = SLATE_TRAY_RECT.x + 48 + p.grooveSlot * 42;
     if (p.y >= grooveY) {
       p.y = grooveY;
       if (!p.clacked) {
         p.clacked = true;
-        foley.playPillClack(0.94 + p.grooveSlot * 0.06, p.id * 11);
+        if (p.kind !== 'linen') foley.playPillClack(0.94 + p.grooveSlot * 0.06, p.id * 11);
       }
       if (Math.abs(p.vy) > 95) {
         p.vy = -p.vy * 0.34;
@@ -356,20 +504,52 @@ function stepSim(dt: number): void {
     }
   }
 
-  if (st.beat === 'night1_maren' && st.handedOver && st.visitorPresence.value < 0.06) {
-    enterBeat(st, 'night1_anomaly');
+  // ------------------------------------------------------------------
+  // FULL 4-NIGHT NARRATIVE PROGRESSION STATE TRANSITIONS
+  // ------------------------------------------------------------------
+  if (st.beat === 'n1_maren' && st.handedOver && st.visitorPresence.value < 0.06) {
+    enterBeat(st, 'n1_anomaly');
     foley.playAnomalyHush();
-  } else if (st.beat === 'night1_anomaly') {
-    if (st.lampMode === 'COUNTER') st.anomalyGlancedInCounter = true;
+  } else if (st.beat === 'n1_anomaly') {
+    if (st.lampMode === 'COUNTER') st.anomalyGlanced = true;
     st.anomalyHoldTimer += cdt;
-    if ((st.anomalyGlancedInCounter && st.anomalyHoldTimer > 4.2) || st.anomalyHoldTimer > 7.5) {
-      enterBeat(st, 'night1_tomas');
+    if ((st.anomalyGlanced && st.anomalyHoldTimer > 3.8) || st.anomalyHoldTimer > 7.0) {
+      enterBeat(st, 'n1_tomas');
     }
-  } else if (st.beat === 'night1_tomas' && st.handedOver && st.visitorPresence.value < 0.06) {
-    enterBeat(st, 'night1_dawn_latch');
-  } else if (st.beat === 'night1_dawn_latch' && st.shutterClosed.value > 0.95) {
+  } else if (st.beat === 'n1_tomas' && st.handedOver && st.visitorPresence.value < 0.06) {
+    enterBeat(st, 'n1_dawn');
+  } else if (st.beat === 'n1_dawn' && st.shutterProgress >= 0.99) {
     st.bayerTransition = 1;
-    enterBeat(st, 'night2_preview');
+    enterBeat(st, 'n2_intro');
+  } else if (st.beat === 'n2_intro' && st.beatTime > 3.4) {
+    enterBeat(st, 'n2_nadia');
+  } else if (st.beat === 'n2_nadia' && st.handedOver && st.visitorPresence.value < 0.06) {
+    enterBeat(st, 'n2_halvorsen');
+  } else if (st.beat === 'n2_halvorsen' && st.handedOver && st.visitorPresence.value < 0.06) {
+    enterBeat(st, 'n2_microsleep');
+  } else if (st.beat === 'n2_microsleep' && !st.microsleep.active) {
+    st.anomalyHoldTimer += cdt;
+    if (st.anomalyHoldTimer > 3.8) enterBeat(st, 'n2_dawn');
+  } else if (st.beat === 'n2_dawn' && st.shutterProgress >= 0.99) {
+    st.bayerTransition = 1;
+    enterBeat(st, 'n3_maren');
+  } else if (st.beat === 'n3_maren' && st.handedOver && st.visitorPresence.value < 0.06) {
+    enterBeat(st, 'n3_nadia');
+  } else if (st.beat === 'n3_nadia' && st.handedOver && st.visitorPresence.value < 0.06) {
+    enterBeat(st, 'n3_rearrangement');
+  } else if (st.beat === 'n3_rearrangement' && !st.microsleep.active && st.handedOver) {
+    enterBeat(st, 'n3_dawn');
+  } else if (st.beat === 'n3_dawn' && st.shutterProgress >= 0.99) {
+    st.bayerTransition = 1;
+    enterBeat(st, 'n4_tomas');
+  } else if (st.beat === 'n4_tomas' && st.handedOver && st.visitorPresence.value < 0.06) {
+    enterBeat(st, 'n4_halvorsen');
+  } else if (st.beat === 'n4_halvorsen' && st.handedOver && st.visitorPresence.value < 0.06) {
+    enterBeat(st, 'n4_dawn_packet');
+    foley.playDrawerSlide(true);
+  } else if (st.beat === 'n4_dawn_packet' && st.shutterProgress >= 0.99) {
+    st.bayerTransition = 0.85;
+    enterBeat(st, 'ending_dawn');
   }
 }
 
@@ -399,13 +579,19 @@ canvas.addEventListener('pointerdown', (e) => {
     beginFromTitle();
     return;
   }
-  if (zone === 'intercom') toggleIntercom(true);
+  if (st.beat === 'ending_dawn' && st.beatTime > 2.2) {
+    st.bayerTransition = 1;
+    enterBeat(st, 'title');
+    return;
+  }
+  if (zone === 'dawn_packet') takeHalvorsenPacket();
+  else if (zone === 'intercom') toggleIntercom(true);
   else if (zone === 'lamp') cycleLampMode();
   else if (zone === 'drawer') toggleDrawer();
   else if (zone === 'bottle') startPourPill();
   else if (zone === 'grace') tuckUnbilledGrace();
   else if (zone === 'paper') {
-    if (st.script && st.pills.length >= st.script.pillsNeeded && st.paperFold < 0.99) {
+    if (st.script && !st.script.noDispense && st.pills.length >= st.script.dosesNeeded && st.paperFold < 0.99) {
       st.draggingPaper = true;
       st.paperDragStartX = pt.x;
       st.paperDragStartY = pt.y;
@@ -467,7 +653,7 @@ window.addEventListener('keydown', (e) => {
   }
   if (k === '1') setLampMode('COUNTER');
   else if (k === '2') setLampMode('DIM');
-  else if (k === '3') setLampMode('CURB');
+  else if (k === '3') setLampMode('SILL');
   else if (k === ' ') {
     e.preventDefault();
     toggleIntercom(true);
@@ -477,6 +663,7 @@ window.addEventListener('keydown', (e) => {
   else if (k === 'f') completePaperFold();
   else if (k === 's') slamStamp();
   else if (k === 'r') st.reviewScriptOpen = !st.reviewScriptOpen;
+  else if (k === 't') takeHalvorsenPacket();
   else if (k === 'e') closeDawnShutter();
 });
 
@@ -490,7 +677,7 @@ window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
 // ----------------------------------------------------------------------
-// DETERMINISTIC LOOKDEV & MULTIMODAL QA HOOK (`window.D`)
+// DETERMINISTIC LOOKDEV & FULL-ARC MULTIMODAL QA HOOK (`window.D`)
 // ----------------------------------------------------------------------
 let manualClock = params.get('manual') === '1';
 
@@ -501,7 +688,14 @@ const D = {
   adv(dt: number, steps = 1) {
     for (let i = 0; i < steps; i++) stepSim(dt);
     present();
-    return { t: st.simTime, beat: st.beat, boil: st.boilTick, pills: st.pills.length, stampFrame: st.stampChoreo.frame };
+    return {
+      t: st.simTime,
+      beat: st.beat,
+      clock: st.clockDisplay,
+      lid: st.microsleep.lidAmount,
+      msFrame: st.microsleep.frame,
+      pills: st.pills.length,
+    };
   },
   snap(): string {
     present();
@@ -542,25 +736,37 @@ const D = {
     else if (name === 'grace') tuckUnbilledGrace();
     else if (name === 'fold') completePaperFold();
     else if (name === 'stamp') slamStamp();
+    else if (name === 'take_packet') takeHalvorsenPacket();
     else if (name === 'shutter') closeDawnShutter();
     present();
   },
   state() {
     return {
+      nightNum: st.nightNum,
       beat: st.beat,
       clock: st.clockDisplay,
       lampMode: st.lampMode,
       visitor: st.visitor,
+      activeProp: st.activeProp,
       drawerIn: st.drawerIn,
+      inkThumbprint: st.inkThumbprint,
+      wetInkSheen: Number(st.wetInkSheen.toFixed(2)),
+      blotterStampTime: st.blotterStampTime,
+      preStampedPacketInTray: st.preStampedPacketInTray,
       pills: st.pills.length,
       graceTucked: st.graceTucked,
       paperFold: st.paperFold,
       stamped: st.stamped,
-      stampFrame: st.stampChoreo.frame,
       handedOver: st.handedOver,
+      uncorkedBottles: [...st.uncorkedBottles],
+      ledgerTallies: st.ledgerTallies,
       marenGraced: st.marenGraced,
       tomasGraced: st.tomasGraced,
-      reversedBottleIdx: st.reversedBottleIdx,
+      nadiaGraced: st.nadiaGraced,
+      halvorsenGraced: st.halvorsenGraced,
+      halvorsenPacketInDrawer: st.halvorsenPacketInDrawer,
+      tookDawnPacket: st.tookDawnPacket,
+      leftSillLampOnAtDawn: st.leftSillLampOnAtDawn,
       webglActive: compositor.webglActive,
     };
   },

@@ -3,7 +3,7 @@
 // - Explicit pair kerning (ri, ia, ip, if, er, ar, Va, st, tr, to, ti, ll, in)
 // - Tapered dip-pen ribbons w(s) = w0 * (1 - s)^1.35 + calligraphic nib pressure
 // - Slashed title auto-fits cleanly to <=86% stage width with tapered underline BELOW baseline!
-// ZERO canvas text APIs, ZERO font-family / @font-face anywhere.
+// Pure-code ribbon lettering only: zero canvas text APIs, zero external typefaces anywhere.
 
 import { dipPenRibbon, gouacheBristle, Pt } from './dryTools';
 import { hash2 } from '../core/prng';

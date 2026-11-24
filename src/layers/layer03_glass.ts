@@ -1,7 +1,5 @@
-// VACUUM LAYER 03 (Opus Gate 2 Upgraded):
-// - Counter umber (#3A2A1C) bleeds 8px UP into bottom of glass at 25% so counter/glass joint breathes
-// - Intercom porthole ring pulled to mid-value brass (#8C6634) so it doesn't compete in 3-value squint
-// - 1px #EBE0CC 40% perimeter rim + water beads + COUNTER-mode mirrored back-shelf reflection ghost
+// VACUUM LAYER 03 (Phase 2 — Multi-Bottle Height-Ordered Reflections, Nadia's Finger Fog Ovals,
+// Halvorsen's Night IV Glass Knock Ripple, Warm-Latch Condensation Clearing, 1.4s Steel Shutter)
 
 import { GameState } from '../core/state';
 import { PALETTE, rgbCss } from '../core/palette';
@@ -32,7 +30,7 @@ export function renderLayer03Glass(ctx: CanvasRenderingContext2D, st: GameState)
   ctx.fillStyle = glassGrad;
   ctx.fillRect(x, y, w, h);
 
-  // 2. Warm Counter Umber (#3A2A1C) bleeding 8px UP into bottom of glass at 25% (Opus Gate 2 lock!)
+  // 2. Warm Counter Umber (#3A2A1C) bleeding 8px UP into bottom edge of glass at 25%
   const bleedGrad = ctx.createLinearGradient(0, y + h - 10, 0, y + h);
   bleedGrad.addColorStop(0, rgbCss(PALETTE.counterUmber, 0));
   bleedGrad.addColorStop(0.2, rgbCss(PALETTE.counterUmber, 0.18));
@@ -40,10 +38,10 @@ export function renderLayer03Glass(ctx: CanvasRenderingContext2D, st: GameState)
   ctx.fillStyle = bleedGrad;
   ctx.fillRect(x, y + h - 10, w, 10);
 
-  // 3. COUNTER-MODE INTERIOR MIRRORED BACK-SHELF GHOST (03:14 Anomaly Membrane!)
+  // 3. COUNTER-MODE MIRRORED BACK-SHELF GHOST (Pharmacy-native microsleep proof: uncorked stoppers + loose tablets + chalk tallies!)
   if (reflectGain > 0.04) {
     ctx.save();
-    ctx.globalAlpha = clamp(reflectGain * 0.62, 0, 0.88);
+    ctx.globalAlpha = clamp(reflectGain * 0.64, 0, 0.88);
 
     const lampGhost = ctx.createRadialGradient(x + 210, y + 320, 12, x + 210, y + 320, 240);
     lampGhost.addColorStop(0, rgbCss(PALETTE.sodiumLamp, 0.30));
@@ -55,10 +53,23 @@ export function renderLayer03Glass(ctx: CanvasRenderingContext2D, st: GameState)
     const shelfY = y + 188;
     gouacheBristle(ctx, x + 260, shelfY, x + 810, shelfY + 2, 8, PALETTE.amberRim, {
       bristles: 6,
-      alpha: 0.30,
+      alpha: 0.32,
       deplete: 0.4,
       seed: boil + 7,
     });
+
+    // Unremembered tally strokes scratched softly into the mirrored back-shelf wood edge
+    if (st.ledgerTallies > 0) {
+      const tx0 = x + 278;
+      for (let t = 0; t < Math.min(st.ledgerTallies, 5); t++) {
+        if (t === 4) {
+          dipPenRibbon(ctx, [{ x: tx0 - 4, y: shelfY - 12 }, { x: tx0 + 28, y: shelfY - 30 }], 2.2, PALETTE.bonePaper, { taperMode: 'velocity', alpha: 0.68, inkPool: false, jitter: 0.25, seed: boil + 61 });
+        } else {
+          const tx = tx0 + t * 7;
+          dipPenRibbon(ctx, [{ x: tx, y: shelfY - 32 }, { x: tx + 1, y: shelfY - 10 }], 2.0, PALETTE.bonePaper, { taperMode: 'velocity', alpha: 0.62, inkPool: false, jitter: 0.2, seed: boil + 62 + t });
+        }
+      }
+    }
 
     const ghostBottles = [
       { bx: x + 325, bw: 44, bh: 92 },
@@ -66,31 +77,39 @@ export function renderLayer03Glass(ctx: CanvasRenderingContext2D, st: GameState)
       { bx: x + 506, bw: 42, bh: 86 },
       { bx: x + 592, bw: 46, bh: 98 },
     ];
+
     ghostBottles.forEach((b, idx) => {
-      const reversed = st.reversedBottleIdx === idx;
-      ctx.fillStyle = rgbCss(PALETTE.amberBottle, reversed ? 0.56 : 0.42);
+      const uncorked = st.uncorkedBottles.includes(idx);
+      ctx.fillStyle = rgbCss(PALETTE.amberBottle, uncorked ? 0.56 : 0.44);
       ctx.fillRect(b.bx, shelfY - b.bh, b.bw, b.bh);
       ctx.fillRect(b.bx + b.bw * 0.28, shelfY - b.bh - 18, b.bw * 0.44, 18);
-      ctx.strokeStyle = rgbCss(PALETTE.amberRim, reversed ? 0.62 : 0.34);
+      ctx.strokeStyle = rgbCss(PALETTE.amberRim, uncorked ? 0.62 : 0.36);
       ctx.lineWidth = 1.4;
       ctx.strokeRect(b.bx, shelfY - b.bh, b.bw, b.bh);
 
-      if (!reversed) {
-        ctx.fillStyle = rgbCss(PALETTE.amberLabel, 0.58);
-        ctx.fillRect(b.bx + 6, shelfY - b.bh * 0.72, b.bw - 12, b.bh * 0.42);
-        ctx.fillStyle = rgbCss(PALETTE.velvetDark, 0.36);
-        ctx.fillRect(b.bx + 10, shelfY - b.bh * 0.58, b.bw - 20, 2);
-        ctx.fillRect(b.bx + 10, shelfY - b.bh * 0.46, b.bw - 26, 2);
+      // Every bottle keeps its front label facing forward; when uncorked during a lost minute,
+      // its stopper sits neatly beside its base with a single loose measured tablet / wax slip!
+      ctx.fillStyle = rgbCss(PALETTE.amberLabel, 0.58);
+      ctx.fillRect(b.bx + 6, shelfY - b.bh * 0.72, b.bw - 12, b.bh * 0.42);
+      ctx.fillStyle = rgbCss(PALETTE.velvetDark, 0.36);
+      ctx.fillRect(b.bx + 10, shelfY - b.bh * 0.58, b.bw - 20, 2);
+      ctx.fillRect(b.bx + 10, shelfY - b.bh * 0.46, b.bw - 26, 2);
+
+      if (!uncorked) {
+        // Seated cork stopper in neck
+        ctx.fillStyle = rgbCss({ r: 158, g: 122, b: 84 }, 0.66);
+        ctx.fillRect(b.bx + b.bw * 0.31, shelfY - b.bh - 28, b.bw * 0.38, 11);
       } else {
-        // ANOMALY: Label turned 180 deg facing plaster wall!
-        ctx.fillStyle = rgbCss(PALETTE.velvetDark, 0.52);
-        ctx.fillRect(b.bx + 5, shelfY - b.bh + 8, b.bw - 10, b.bh - 14);
-        gouacheBristle(ctx, b.bx + b.bw - 7, shelfY - b.bh + 6, b.bx + b.bw - 7, shelfY - 6, 4.2, PALETTE.glassRim, {
-          bristles: 3,
-          alpha: 0.52,
-          deplete: 0.4,
-          seed: boil + 91,
-        });
+        // ANOMALY: Open hollow bottle mouth + cork laid neatly on shelf beside base + loose chalk tablet!
+        ctx.fillStyle = rgbCss(PALETTE.velvetDark, 0.78);
+        ctx.fillRect(b.bx + b.bw * 0.32, shelfY - b.bh - 18, b.bw * 0.36, 6);
+        ctx.fillStyle = rgbCss({ r: 174, g: 136, b: 92 }, 0.78);
+        ctx.fillRect(b.bx + b.bw + 5, shelfY - 12, 13, 10);
+        // Loose measured bone tablet / folded slip beside uncorked bottle
+        ctx.fillStyle = rgbCss(PALETTE.bonePaper, 0.82);
+        ctx.beginPath();
+        ctx.ellipse(b.bx + b.bw + 24, shelfY - 5, 5.5, 3.2, 0, 0, Math.PI * 2);
+        ctx.fill();
       }
     });
 
@@ -104,7 +123,42 @@ export function renderLayer03Glass(ctx: CanvasRenderingContext2D, st: GameState)
     ctx.restore();
   }
 
-  // 4. CURB mode warm flare glare on lower glass
+  // 4. Nadia's Two Fading Fingertip Condensation Ovals on Cold Glass (3s decay per Gate 3!)
+  if (st.nadiaFogAlpha > 0.02) {
+    const fx = x + w * 0.44 - 14 + 84;
+    const fy = y + 298;
+    for (const [dx, dy] of [
+      [-6, -4],
+      [6, 1],
+    ]) {
+      const fg = ctx.createRadialGradient(fx + dx, fy + dy, 1, fx + dx, fy + dy, 14);
+      fg.addColorStop(0, rgbCss(PALETTE.glassRim, 0.26 * st.nadiaFogAlpha));
+      fg.addColorStop(0.6, rgbCss(PALETTE.glassRim, 0.10 * st.nadiaFogAlpha));
+      fg.addColorStop(1, rgbCss(PALETTE.glassRim, 0));
+      ctx.fillStyle = fg;
+      ctx.beginPath();
+      ctx.ellipse(fx + dx, fy + dy, 10, 15, 0.12, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // 5. Night IV Halvorsen Single Knuckle Knock Ripple on Glass (interrupts microsleep!)
+  if (st.microsleep.knockFlash > 0.02) {
+    const kx = x + w * 0.56;
+    const ky = y + 252;
+    const u = 1 - st.microsleep.knockFlash;
+    ctx.strokeStyle = rgbCss(PALETTE.glassRim, 0.55 * st.microsleep.knockFlash);
+    ctx.lineWidth = 2.0;
+    ctx.beginPath();
+    ctx.arc(kx, ky, 8 + u * 26, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = rgbCss(PALETTE.sodiumLamp, 0.45 * st.microsleep.knockFlash);
+    ctx.beginPath();
+    ctx.arc(kx, ky, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 6. CURB mode warm flare glare on lower glass
   if (curbMix > 0.02) {
     const fg = ctx.createRadialGradient(x + 260, y + h - 14, 8, x + 280, y + h - 30, 320);
     fg.addColorStop(0, rgbCss(PALETTE.sodiumLamp, 0.44 * curbMix));
@@ -114,7 +168,7 @@ export function renderLayer03Glass(ctx: CanvasRenderingContext2D, st: GameState)
     ctx.fillRect(x, y, w, h);
   }
 
-  // 5. Fine condensation scratches & running glass beads with #EBE0CC rim light
+  // 7. Glass condensation & running water beads (leaving a quiet DRY patch directly above warm latch!)
   for (let i = 0; i < 6; i++) {
     const sx = x + 48 + hash2(i, 1, 55) * (w - 96);
     const sy = y + 36 + hash2(i, 2, 55) * (h - 90);
@@ -126,7 +180,7 @@ export function renderLayer03Glass(ctx: CanvasRenderingContext2D, st: GameState)
     });
   }
 
-  const dropCount = Math.floor(38 * clamp(st.dna.rainDensity, 0.2, 2.5));
+  const dropCount = Math.floor(38 * clamp(st.dna.rainDensity * st.weatherIntensity, 0.2, 2.8));
   for (let i = 0; i < dropCount; i++) {
     const bx = x + 22 + hash2(i, 7, 131) * (w - 44);
     const fallRate = 14 + hash2(i, 8, 131) * 32;
@@ -151,7 +205,7 @@ export function renderLayer03Glass(ctx: CanvasRenderingContext2D, st: GameState)
     ctx.fill();
   }
 
-  // 6. Structural vertical mullions + 1px #EBE0CC 40% perimeter rim
+  // 8. Structural mullions + 1px #EBE0CC 40% perimeter rim
   const leftMullionX = x + 196;
   const rightMullionX = x + w - 196;
   for (const mx of [leftMullionX, rightMullionX]) {
@@ -168,7 +222,7 @@ export function renderLayer03Glass(ctx: CanvasRenderingContext2D, st: GameState)
   ctx.lineWidth = 1.2;
   ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
 
-  // 7. Circular Brass Intercom Grille (Middle-value brass #8C6634 per Gate 2 squint lock!)
+  // 9. Circular Brass Intercom Grille (Middle-value brass #8C6634)
   const { cx, cy, r } = INTERCOM_GRILLE;
   const pressed = st.intercomSpring.value;
   const hover = st.hoverZone === 'intercom';
@@ -204,26 +258,29 @@ export function renderLayer03Glass(ctx: CanvasRenderingContext2D, st: GameState)
   ctx.arc(cx, cy, 4.8 - pressed * 0.9, 0, Math.PI * 2);
   ctx.fill();
 
-  // 8. Night steel shutter pull-down at Dawn
-  const shut = clamp(st.shutterClosed.value, 0, 1);
+  // 10. 1.4s Corrugated Steel Night Shutter Slats descending cleanly over glass
+  const shut = clamp(Math.max(st.shutterProgress, st.shutterClosed.value), 0, 1);
   if (shut > 0.01) {
     const shH = h * shut;
-    ctx.fillStyle = rgbCss({ r: 24, g: 28, b: 34 }, 0.98);
+    ctx.fillStyle = rgbCss({ r: 22, g: 26, b: 32 }, 0.98);
     ctx.fillRect(x, y, w, shH);
-    for (let sy = y + 18; sy < y + shH; sy += 24) {
-      ctx.strokeStyle = rgbCss(PALETTE.velvetDark, 0.85);
-      ctx.lineWidth = 2;
+    for (let sy = y + 18; sy < y + shH; sy += 22) {
+      ctx.strokeStyle = rgbCss(PALETTE.velvetDark, 0.88);
+      ctx.lineWidth = 2.2;
       ctx.beginPath();
       ctx.moveTo(x, sy);
       ctx.lineTo(x + w, sy);
       ctx.stroke();
-      ctx.strokeStyle = rgbCss(PALETTE.glassRim, 0.18);
+      ctx.strokeStyle = rgbCss(PALETTE.glassRim, 0.16);
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x, sy + 2);
       ctx.lineTo(x + w, sy + 2);
       ctx.stroke();
     }
+    // Heavy steel bottom rail lip
+    ctx.fillStyle = rgbCss(PALETTE.brassDark, 0.92);
+    ctx.fillRect(x, y + shH - 8, w, 8);
   }
 
   ctx.restore();

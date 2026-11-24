@@ -11,14 +11,14 @@ You are the sole night-shift pharmacist at a cramped corner *Notdienst* window. 
    - *Presence:* Soaked canvas jacket, taped thumb, eyes kept down on the steel tray.
    - *Arc:* Short on change on Night I for burn salve and gauze. If you cover him silently (or tuck grace / tilt curb lamp), the flickering sodium streetlamp across the wet lane burns dead-steady by Night III (and already shows steady at Night II's opening check). Nobody mentions it aloud—you only notice if you switch the lamp to `DIM` and actually look out past the glass.
 3. **Nadia (34) — Pediatric Night-Shift Nurse**
-   - *Presence:* Dark rain slicker over pale scrub collar; the only visitor who looks past the glass into your room.
-   - *Arc:* Quick clinical shorthand softened by exhaustion. On Night III, through dimmed glass, she tilts her head past your shoulder and says quietly: *"When did you last sleep? Your labels are turned around."*
+   - *Presence:* Dark rain slicker over pale mint-grey scrub collar; the only visitor who looks past the glass into your room.
+   - *Arc:* Quick clinical shorthand softened by exhaustion. On Night III, through dimmed glass, she tilts her head past your shoulder and says quietly: *"When did you last sleep? Your ledger's filled through Tuesday."*
 4. **Dr. Halvorsen (74) — Retired Corner Physician**
-   - *Presence:* Umbrella dripping just out of frame; upright archaic dip-pen scripts on heavy cream slips.
-   - *Arc:* Measured, formal, comfortable in silence. On Night IV his script names the exact minute you dimmed your counter lamp while alone. He isn't spying on you—he worked the 1979 night rotation himself and recognizes the rhythm of someone losing hours.
+   - *Presence:* Closed umbrella dripping every 1.3s; upright archaic dip-pen scripts on heavy cream slips.
+   - *Arc:* Measured, formal, comfortable in silence. On Night IV he taps the glass once to interrupt your microsleep at `02:47`, recognizing from his own 1979 night rotation how someone starts filling tomorrow's page before midnight.
 
-## The Quiet Rearrangement (Escalation)
-- **Night I (`03:14`):** Pure human warmth with Maren and Tomas; at `03:14` between shifts, ONE amber bottle appears turned label-to-wall inside the `COUNTER`-mode glass reflection—gone when you look directly.
-- **Night II:** Steady streetlamp if Tomas received grace; brass stamp feels faintly warm; two bottles reversed in reflection.
-- **Night III:** Maren's extra coin; Nadia notices your back labels through dimmed glass; before anyone rings, the steel airlock drawer sits slightly open from *inside* with a faintly warm latch and a bone-dry prescription written in your own dip-pen hand (*2x valerian, 03:14*).
-- **Night IV (Dawn Resolution):** All bottles on the back shelf face the plaster in exact height order. Before gray dawn, Halvorsen slides the drawer back to you holding a single folded waxed-paper packet with **no stamp**. You choose whether to take it, pull the steel shutter/hatch closed before dawn, and leave the curb lamp shining outward across the wet dark. No reveal sting. Quiet mercy.
+## The Lost Minutes (Pharmacy-Native Escalation — Zero Literal Prompt Echoes)
+- **Night I (`02:47`):** Pure human warmth with Maren and Tomas; at `02:47` between shifts, ONE amber bottle sits uncorked with its stopper and a loose chalk tablet beside it in the `COUNTER` glass reflection, plus a single chalk tally mark on the shelf rail.
+- **Night II (`02:47 -> 02:53`):** Steady corner streetlamp if Tomas received grace; after the 6-frame Bayer microsleep blink, two reflected bottles sit uncorked beside 3 tallies and a fresh wet-sheen crimson blotter stamp (`02:51`) sits beside your ink pad.
+- **Night III (`02:47 -> 03:04`):** Maren's quiet odd coin set apart; Nadia notices your night ledger filled through Tuesday; after losing 17 minutes, the steel airlock drawer sits two inches open from *inside* holding a pre-stamped `03:01` waxed packet, a smudged vermilion thumbprint on the pull bar, and an own-hand stub (`2x Valerian, 03:01`).
+- **Night IV (Dawn Resolution):** Halvorsen's single knuckle knock at `02:47` reverses your eyelid blink open so you don't lose the minute. Before gray dawn (`04:48`), he works the drawer from outside carrying a single opposite-folded waxed-paper packet with **no stamp**. You choose whether to take it, pull the steel shutter closed (`1.4s`), and optionally leave the brass `SILL` lamp lit behind the steel slats. No reveal sting. Quiet mercy.

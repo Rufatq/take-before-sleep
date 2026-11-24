@@ -1,7 +1,8 @@
-// Unified Non-MSAA WebGL2 Compositor + 8 Independent Soloable Vacuum Layer Canvases (Opus Gate 2 Upgraded)
-// - Luminance-weighted 12fps 2px-cell film grain: g = base * smoothstep(0.04, 0.30, L) * (1 - smoothstep(0.75, 0.95, L))
-// - Grain COMPLETELY OFF in Vacuum Grid & Solo Isolation renders!
-// - Strict integer Z-strata 01..08; Intel HD 4000 / Mesa safe (antialias: false, samples: 0).
+// Unified Non-MSAA WebGL2 Compositor (Phase 2 — Eyelid-Biased 4x4 Bayer Microsleep Shader + Pitch Dip!)
+// Opus Gate 3 exact microsleep formula:
+//   Bayer threshold biased by abs(vUv.y - 0.5) * 0.7 so eyelids meet organically from top & bottom!
+// - Luminance-weighted 12fps 2px-cell film grain (OFF in Vacuum Grid & Solo isolation renders)
+// - Intel HD 4000 / Mesa safe: antialias: false, zero MSAA FBOs.
 
 import { GameState } from '../core/state';
 import { PALETTE, rgbCss, GroundMode } from '../core/palette';
@@ -48,6 +49,8 @@ uniform float uTime;
 uniform float uGrain;
 uniform float uSquint;
 uniform float uBayer;
+uniform float uBlink;    // Eyelid-biased 4x4 Bayer microsleep closure (0..1)
+uniform float uPitchUv;  // Subtle vertical pitch dip during microsleep (0..0.02)
 uniform vec2 uResolution;
 out vec4 fragColor;
 
@@ -71,16 +74,16 @@ float bayer4x4(vec2 px) {
 }
 
 void main() {
-  vec4 c = texture(uTex, vUv);
+  vec2 sampleUv = vec2(vUv.x, clamp(vUv.y + uPitchUv, 0.0, 1.0));
+  vec4 c = texture(uTex, sampleUv);
   vec3 col = c.rgb;
   float L = dot(col, vec3(0.299, 0.587, 0.114));
 
-  // 3-Value Silhouette Squint Mode (Opus Gate 1 & 2 locked: #0B0A0E, #2A3038, #E8D5A8)
-  // High threshold 0.58 reserves #E8D5A8 strictly for the singular hero mass (counter card + pills)!
+  vec3 vDark = vec3(11.0, 10.0, 14.0) / 255.0;
+
   if (uSquint > 0.5) {
-    vec3 vDark = vec3(11.0, 10.0, 14.0) / 255.0;
-    vec3 vMid  = vec3(42.0, 48.0, 56.0) / 255.0;
-    vec3 vLit  = vec3(232.0, 213.0, 168.0) / 255.0;
+    vec3 vMid = vec3(42.0, 48.0, 56.0) / 255.0;
+    vec3 vLit = vec3(232.0, 213.0, 168.0) / 255.0;
     if (L < 0.105) col = vDark;
     else if (L < 0.58) col = vMid;
     else col = vLit;
@@ -88,8 +91,6 @@ void main() {
     return;
   }
 
-  // Luminance-Weighted Film Grain on 2px cells @ 12fps (Opus Gate 2 exact formula!)
-  // Velvet blacks (<0.04) and paper highlights (>0.95) remain crystal clean!
   vec2 px = vUv * uResolution;
   if (uGrain > 0.001) {
     float gTick = floor(uTime * 12.0);
@@ -99,11 +100,20 @@ void main() {
     col = clamp(col + vec3(g, g * 0.94, g * 0.86), 0.0, 1.0);
   }
 
-  // 4x4 Bayer Ordered-Dither Scene Transition
+  // Flat 4x4 Bayer dissolve between scenes/nights
   if (uBayer > 0.005) {
     float th = bayer4x4(floor(px * 0.5));
-    if (uBayer > th) {
-      col = vec3(11.0, 10.0, 14.0) / 255.0;
+    if (uBayer > th) col = vDark;
+  }
+
+  // Eyelid-Biased 4x4 Bayer Microsleep Blink (Opus Gate 3 exact formula: abs(uv.y - 0.5) * 0.7!)
+  if (uBlink > 0.005) {
+    if (uBlink >= 0.995) {
+      col = vDark;
+    } else {
+      float lidBias = abs(vUv.y - 0.5) * 0.7;
+      float th = bayer4x4(floor(px * 0.5)) * 0.68 + (0.35 - lidBias);
+      if (uBlink > th) col = vDark;
     }
   }
 
@@ -210,13 +220,14 @@ export class StageCompositor {
       uGrain: gl.getUniformLocation(prog, 'uGrain'),
       uSquint: gl.getUniformLocation(prog, 'uSquint'),
       uBayer: gl.getUniformLocation(prog, 'uBayer'),
+      uBlink: gl.getUniformLocation(prog, 'uBlink'),
+      uPitchUv: gl.getUniformLocation(prog, 'uPitchUv'),
       uResolution: gl.getUniformLocation(prog, 'uResolution'),
     };
     return true;
   }
 
   private renderAllVacuumLayers(st: GameState): void {
-    // Fixed integer Z-strata 01..08
     const fns = [
       (c: CanvasRenderingContext2D) => renderLayer01Street(c, st, STAGE_W, STAGE_H),
       (c: CanvasRenderingContext2D) => renderLayer02Visitor(c, st),
@@ -232,6 +243,9 @@ export class StageCompositor {
       const shouldDraw = st.viewMode === 'grid' || st.soloLayer === 0 || st.soloLayer === i + 1;
       if (!shouldDraw) continue;
       const lctx = this.layerCtxs[i];
+      lctx.setTransform(1, 0, 0, 1, 0, 0);
+      lctx.globalAlpha = 1;
+      lctx.globalCompositeOperation = 'source-over';
       lctx.clearRect(0, 0, STAGE_W, STAGE_H);
       fns[i](lctx);
     }
@@ -242,8 +256,11 @@ export class StageCompositor {
     const ctx = this.compositeCtx;
     const isIsolation = st.viewMode === 'grid' || st.soloLayer > 0;
 
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = groundFillStyle(st.groundMode);
     ctx.fillRect(0, 0, STAGE_W, STAGE_H);
+
+    const hasVisitor = st.visitor !== 'none' && st.visitorPresence.value > 0.02;
 
     if (st.viewMode === 'grid') {
       const cols = 4;
@@ -257,7 +274,9 @@ export class StageCompositor {
         const cy = row * cellH;
         ctx.fillStyle = groundFillStyle(st.groundMode);
         ctx.fillRect(cx, cy, cellW, cellH);
-        ctx.drawImage(this.layerCanvases[i], cx, cy, cellW, cellH);
+        if (i !== 1 || hasVisitor) {
+          ctx.drawImage(this.layerCanvases[i], cx, cy, cellW, cellH);
+        }
 
         ctx.strokeStyle = rgbCss(PALETTE.velvetDark, 0.85);
         ctx.lineWidth = 2;
@@ -273,9 +292,12 @@ export class StageCompositor {
         });
       }
     } else if (st.soloLayer > 0) {
-      ctx.drawImage(this.layerCanvases[st.soloLayer - 1], 0, 0);
+      if (st.soloLayer !== 2 || hasVisitor) {
+        ctx.drawImage(this.layerCanvases[st.soloLayer - 1], 0, 0);
+      }
     } else {
       for (let i = 0; i < 8; i++) {
+        if (i === 1 && !hasVisitor) continue;
         ctx.drawImage(this.layerCanvases[i], 0, 0);
       }
     }
@@ -291,10 +313,12 @@ export class StageCompositor {
 
       gl.uniform1i(this.uLocs.uTex, 0);
       gl.uniform1f(this.uLocs.uTime, st.simTime);
-      // Turn grain COMPLETELY OFF in isolation renders (Opus Gate 2 lock!)
       gl.uniform1f(this.uLocs.uGrain, isIsolation ? 0.0 : clamp(st.dna.grainAmount, 0, 0.35));
       gl.uniform1f(this.uLocs.uSquint, st.viewMode === 'squint' ? 1.0 : 0.0);
       gl.uniform1f(this.uLocs.uBayer, isIsolation ? 0.0 : clamp(Math.max(st.bayerTransition, st.dna.bayerDither), 0, 1));
+      gl.uniform1f(this.uLocs.uBlink, isIsolation ? 0.0 : clamp(st.microsleep.lidAmount, 0, 1));
+      // Convert degrees pitch dip (~0.4..1.1 deg) to subtle vertical UV offset
+      gl.uniform1f(this.uLocs.uPitchUv, isIsolation ? 0.0 : -st.cameraPitch.value * 0.011);
       gl.uniform2f(this.uLocs.uResolution, STAGE_W, STAGE_H);
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
