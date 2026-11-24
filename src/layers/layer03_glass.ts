@@ -58,15 +58,16 @@ export function renderLayer03Glass(ctx: CanvasRenderingContext2D, st: GameState)
       seed: boil + 7,
     });
 
-    // Unremembered tally strokes scratched softly into the mirrored back-shelf wood edge
+    // Unremembered chalk tally strokes scratched cleanly into the mirrored back-shelf margin (lifted to legible #9AA2AB per Gate 4!)
     if (st.ledgerTallies > 0) {
-      const tx0 = x + 278;
+      const tx0 = x + 276;
+      const tallyCol = { r: 158, g: 166, b: 174 };
       for (let t = 0; t < Math.min(st.ledgerTallies, 5); t++) {
         if (t === 4) {
-          dipPenRibbon(ctx, [{ x: tx0 - 4, y: shelfY - 12 }, { x: tx0 + 28, y: shelfY - 30 }], 2.2, PALETTE.bonePaper, { taperMode: 'velocity', alpha: 0.68, inkPool: false, jitter: 0.25, seed: boil + 61 });
+          dipPenRibbon(ctx, [{ x: tx0 - 5, y: shelfY - 10 }, { x: tx0 + 30, y: shelfY - 32 }], 2.4, tallyCol, { taperMode: 'velocity', alpha: 0.92, inkPool: false, jitter: 0.2, seed: boil + 61 });
         } else {
-          const tx = tx0 + t * 7;
-          dipPenRibbon(ctx, [{ x: tx, y: shelfY - 32 }, { x: tx + 1, y: shelfY - 10 }], 2.0, PALETTE.bonePaper, { taperMode: 'velocity', alpha: 0.62, inkPool: false, jitter: 0.2, seed: boil + 62 + t });
+          const tx = tx0 + t * 7.5;
+          dipPenRibbon(ctx, [{ x: tx, y: shelfY - 34 }, { x: tx + 1, y: shelfY - 9 }], 2.1, tallyCol, { taperMode: 'velocity', alpha: 0.86, inkPool: false, jitter: 0.18, seed: boil + 62 + t });
         }
       }
     }
@@ -123,21 +124,21 @@ export function renderLayer03Glass(ctx: CanvasRenderingContext2D, st: GameState)
     ctx.restore();
   }
 
-  // 4. Nadia's Two Fading Fingertip Condensation Ovals on Cold Glass (3s decay per Gate 3!)
+  // 4. Nadia's Two Fading Fingertip Condensation Ovals on Open Cold Glass (#9FB0BF 0.20 alpha, 11x7px feathered — Gate 4!)
   if (st.nadiaFogAlpha > 0.02) {
-    const fx = x + w * 0.44 - 14 + 84;
-    const fy = y + 298;
+    const fx = x + w * 0.44 - 14 + 132;
+    const fy = y + 292;
     for (const [dx, dy] of [
-      [-6, -4],
+      [-6, -3],
       [6, 1],
     ]) {
-      const fg = ctx.createRadialGradient(fx + dx, fy + dy, 1, fx + dx, fy + dy, 14);
-      fg.addColorStop(0, rgbCss(PALETTE.glassRim, 0.26 * st.nadiaFogAlpha));
-      fg.addColorStop(0.6, rgbCss(PALETTE.glassRim, 0.10 * st.nadiaFogAlpha));
-      fg.addColorStop(1, rgbCss(PALETTE.glassRim, 0));
+      const fg = ctx.createRadialGradient(fx + dx, fy + dy, 2, fx + dx, fy + dy, 13);
+      fg.addColorStop(0, rgbCss({ r: 159, g: 176, b: 191 }, 0.22 * st.nadiaFogAlpha));
+      fg.addColorStop(0.65, rgbCss({ r: 159, g: 176, b: 191 }, 0.12 * st.nadiaFogAlpha));
+      fg.addColorStop(1, rgbCss({ r: 159, g: 176, b: 191 }, 0));
       ctx.fillStyle = fg;
       ctx.beginPath();
-      ctx.ellipse(fx + dx, fy + dy, 10, 15, 0.12, 0, Math.PI * 2);
+      ctx.ellipse(fx + dx, fy + dy, 11, 8, 0.08, 0, Math.PI * 2);
       ctx.fill();
     }
   }

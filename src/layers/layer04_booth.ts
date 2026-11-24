@@ -166,9 +166,9 @@ export function renderLayer04Booth(ctx: CanvasRenderingContext2D, st: GameState,
         drawCoin(ctx, cx, cy, p === 0);
       }
     }
-    // MAREN NIGHT III: One extra coin quietly set slightly apart from her neat pairs! (Grace returning!)
+    // MAREN NIGHT III: One extra brass coin quietly set 40px apart on the tray floor! (Opus Gate 4 polish!)
     if (st.script.extraCoin) {
-      drawCoin(ctx, coinX + pairs * 28 + 18, coinY + 11, true);
+      drawCoin(ctx, coinX + pairs * 28 + 44, coinY + 6, true, 0.76);
     }
 
     if (!st.packetInDrawer && st.paperSlide < 0.7 && !st.script.fortyCentsOnly) {
@@ -304,14 +304,14 @@ export function renderLayer04Booth(ctx: CanvasRenderingContext2D, st: GameState,
   ctx.restore();
 }
 
-function drawCoin(ctx: CanvasRenderingContext2D, cx: number, cy: number, brass: boolean): void {
+function drawCoin(ctx: CanvasRenderingContext2D, cx: number, cy: number, brass: boolean, scale = 1.0): void {
   ctx.fillStyle = rgbCss(PALETTE.velvetDark, 0.72);
   ctx.beginPath();
-  ctx.ellipse(cx + 2, cy + 3, 8.8, 5.2, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx + 2 * scale, cy + 3 * scale, 8.8 * scale, 5.2 * scale, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = rgbCss(brass ? PALETTE.brassMid : { r: 148, g: 140, b: 126 }, 0.94);
+  ctx.fillStyle = rgbCss(brass ? { r: 144, g: 105, b: 54 } : { r: 148, g: 140, b: 126 }, 0.94);
   ctx.beginPath();
-  ctx.ellipse(cx, cy, 8.2, 4.9, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx, cy, 8.2 * scale, 4.9 * scale, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = rgbCss(PALETTE.velvetDark, 0.85);
   ctx.lineWidth = 1.3;

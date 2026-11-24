@@ -6,6 +6,15 @@ A tactile, rain-soaked late-night corner pharmacy behind a glass night hatch (*N
 - **Optical Glass Membrane:** Switch the brass desk lamp between `COUNTER` (illuminates your work while turning the glass into a semi-mirror of your back shelves), `DIM` (reveals the stranger and street outside), and `SILL` (casts soft sodium light across the recessed hatch sill and wet glass).
 - **Hidden Calibration Lab:** Press `L` or open `?lab=1` for live Vacuum Layer isolation, 4x2 Vacuum Grid, 3-Value Silhouette Squint, ground switches, presets, overdrive scrubbers, and `Copy Diff JSON`.
 
+## Play Now
+- **Standalone zero-network build:** Open [`play/index.html`](play/index.html) directly in any modern browser (no server, no CDN, zero external assets).
+- **Dev / Build from source:**
+  ```bash
+  pnpm install
+  pnpm dev        # local dev server on http://127.0.0.1:4173
+  pnpm package    # rebuild dist/ and single-file play/index.html
+  ```
+
 ## Controls
 - `Click` (or `1 / 2 / 3`): Switch brass desk lamp (`COUNTER` / `DIM` / `SILL`)
 - `Hold Intercom Grille` (or hold `Space`): Listen to the stranger outside

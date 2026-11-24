@@ -78,7 +78,7 @@ export function renderLayer02Visitor(ctx: CanvasRenderingContext2D, st: GameStat
     dipPenRibbon(ctx, [{ x: cx + 48, y: shoulderY - 5 }, { x: cx + 76, y: shoulderY + 5 }, { x: cx + 98, y: shoulderY + 18 }], 4.8, PALETTE.sodiumLamp, { taperMode: 'velocity', alpha: 0.68 * rimGain, inkPool: false, jitter: 0.5, seed: boil + 23 });
     dipPenRibbon(ctx, [{ x: cx + 106, y: shoulderY + 32 }, { x: cx + 121, y: shoulderY + 60 }, { x: cx + 126, y: shoulderY + 96 }], 3.8, PALETTE.amberRim, { taperMode: 'velocity', alpha: 0.54 * rimGain, inkPool: false, jitter: 0.5, seed: boil + 25 });
 
-    drawAttachedHand(ctx, cx - 22, y + h - 22 + breath * 0.4, baseY, false, rimGain, boil + 31);
+    drawAttachedHand(ctx, cx - 22, y + h - 22 + breath * 0.4, baseY, false, rimGain, boil + 31, st.beat === 'title');
     dipPenRibbon(ctx, [...coat, coat[0]], 2.6, PALETTE.velvetDark, { taperMode: 'arch', jitter: 0.6, seed: boil + 41 });
   } else if (st.visitor === 'tomas') {
     const shoulderY = y + 216 + breath;
@@ -222,21 +222,21 @@ export function renderLayer02Visitor(ctx: CanvasRenderingContext2D, st: GameStat
     gouacheBristle(ctx, nx - 64, shoulderY - 2, nx - 102, shoulderY + 34, 4.2, PALETTE.glassRim, { bristles: 3, alpha: 0.44 * rimGain, deplete: 0.65, seed: boil + 91 });
     dipPenRibbon(ctx, [{ x: nx + 48, y: shoulderY + 3 }, { x: nx + 82, y: shoulderY + 20 }, { x: nx + 100, y: shoulderY + 46 }], 4.4, PALETTE.sodiumLamp, { taperMode: 'velocity', alpha: 0.76 * rimGain, inkPool: false, jitter: 0.45, seed: boil + 93 });
 
-    // Index & middle fingertips raised lightly onto the chilled glass pane! (Matches Layer 03 fog ovals!)
-    const fx = nx + 84;
-    const fy = y + 300 + breath * 0.4;
+    // Index & middle fingertips raised OUTSIDE coat silhouette over open cold glass! (Opus Gate 4 polish!)
+    const fx = nx + 132;
+    const fy = y + 296 + breath * 0.4;
     dryChalkPoly(
       ctx,
       [
-        { x: fx - 24, y: baseY },
-        { x: fx - 14, y: fy + 24 },
-        { x: fx + 12, y: fy + 24 },
-        { x: fx + 18, y: baseY },
+        { x: fx - 26, y: baseY },
+        { x: fx - 12, y: fy + 22 },
+        { x: fx + 10, y: fy + 24 },
+        { x: fx + 12, y: baseY },
       ],
       { r: 16, g: 20, b: 25 },
       { pressure: 0.94, peek: 0.2, edgeRough: 0.6, boilSeed: boil + 95 }
     );
-    // Two slender fingertips pressed against glass
+    // Two slender fingertips pressed lightly on open glass
     for (const [dx, dy] of [
       [-6, 0],
       [6, 4],
@@ -244,10 +244,10 @@ export function renderLayer02Visitor(ctx: CanvasRenderingContext2D, st: GameStat
       dryChalkPoly(
         ctx,
         [
-          { x: fx + dx - 4, y: fy + dy + 24 },
-          { x: fx + dx - 3, y: fy + dy - 10 },
-          { x: fx + dx + 4, y: fy + dy - 10 },
-          { x: fx + dx + 5, y: fy + dy + 24 },
+          { x: fx + dx - 3.5, y: fy + dy + 22 },
+          { x: fx + dx - 2.5, y: fy + dy - 9 },
+          { x: fx + dx + 3.5, y: fy + dy - 9 },
+          { x: fx + dx + 4.5, y: fy + dy + 22 },
         ],
         PALETTE.coldSkin,
         { pressure: 0.88, peek: 0.22, edgeRough: 0.4, boilSeed: boil + 97 + dx }
@@ -298,54 +298,51 @@ export function renderLayer02Visitor(ctx: CanvasRenderingContext2D, st: GameStat
       { underpaint: PALETTE.velvetDark, pressure: 0.92, peek: 0.28, edgeRough: 0.6, boilSeed: boil + 103 }
     );
 
-    // Upright bare head with swept silver-white hair crown
+    // Upright bare elderly head: flatter crown (-6px) & cropped neatly at ear line (y≈185), distinct from Nadia's bob! (Gate 4!)
     const head: Pt[] = [
-      { x: cx - 38, y: headY + 48 },
-      { x: cx - 40, y: headY - 2 },
-      { x: cx - 22, y: headY - 32 },
-      { x: cx + 22, y: headY - 30 },
-      { x: cx + 38, y: headY + 4 },
-      { x: cx + 32, y: headY + 50 },
+      { x: cx - 34, y: headY + 18 },
+      { x: cx - 36, y: headY - 6 },
+      { x: cx - 22, y: headY - 24 },
+      { x: cx + 22, y: headY - 23 },
+      { x: cx + 35, y: headY - 2 },
+      { x: cx + 31, y: headY + 18 },
     ];
-    dryChalkPoly(ctx, head, PALETTE.velvetDark, { pressure: 0.96, peek: 0.14, edgeRough: 0.7, boilSeed: boil + 105 });
+    dryChalkPoly(ctx, head, PALETTE.velvetDark, { pressure: 0.96, peek: 0.14, edgeRough: 0.6, boilSeed: boil + 105 });
 
-    // 3/4 sodium light catching ONE silver sliver of brow & temple (Gate 3 lock!)
+    // 3/4 sodium light catching ONE crisp silver brow line (#9CA3A8, 2.2px x 22px) & swept silver temple! (Gate 4!)
     drawThreeQuarterFace(ctx, cx, headY + 4, dimMix, curbMix, boil + 107, true);
     dipPenRibbon(
       ctx,
       [
-        { x: cx + 2, y: headY - 28 },
-        { x: cx + 22, y: headY - 26 },
-        { x: cx + 34, y: headY - 8 },
+        { x: cx + 2, y: headY - 22 },
+        { x: cx + 22, y: headY - 20 },
+        { x: cx + 33, y: headY - 4 },
       ],
-      4.2,
-      PALETTE.glassRim,
-      { taperMode: 'velocity', alpha: 0.72 * rimGain, inkPool: false, jitter: 0.4, seed: boil + 109 }
+      3.8,
+      { r: 156, g: 163, b: 168 },
+      { taperMode: 'velocity', alpha: 0.84, inkPool: false, jitter: 0.3, seed: boil + 109 }
     );
-    // Silver brow sliver
-    dipPenRibbon(
-      ctx,
-      [
-        { x: cx + 8, y: headY + 12 },
-        { x: cx + 25, y: headY + 10 },
-      ],
-      2.6,
-      PALETTE.glassRim,
-      { taperMode: 'velocity', alpha: 0.80 * rimGain, inkPool: false, jitter: 0.25, seed: boil + 111 }
-    );
+    // Crisp horizontal silver brow line (#9CA3A8, ~22px wide)
+    ctx.strokeStyle = rgbCss({ r: 156, g: 163, b: 168 }, 0.90);
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(cx + 6, headY + 11);
+    ctx.lineTo(cx + 28, headY + 9);
+    ctx.stroke();
 
-    // Tapered shoulder sodium rims
-    dipPenRibbon(ctx, [{ x: cx + 62, y: shoulderY - 10 }, { x: cx + 96, y: shoulderY + 6 }, { x: cx + 112, y: shoulderY + 28 }], 4.4, PALETTE.sodiumLamp, { taperMode: 'velocity', alpha: 0.72 * rimGain, inkPool: false, jitter: 0.45, seed: boil + 113 });
-    dipPenRibbon(ctx, [{ x: cx + 114, y: shoulderY + 46 }, { x: cx + 119, y: shoulderY + 86 }], 3.2, PALETTE.amberRim, { taperMode: 'velocity', alpha: 0.50 * rimGain, inkPool: false, jitter: 0.4, seed: boil + 115 });
+    // Cool 1.5px rim (#4A5868) on shoulder facing away from lamp so coat never vanishes in SILL beam! (Gate 4!)
+    dipPenRibbon(ctx, [{ x: cx + 68, y: shoulderY - 10 }, { x: cx + 114, y: shoulderY + 26 }, { x: cx + 120, y: shoulderY + 112 }], 2.0, { r: 74, g: 88, b: 104 }, { taperMode: 'velocity', alpha: 0.86, inkPool: false, jitter: 0.3, seed: boil + 112 });
+    // Tapered shoulder sodium rim catch
+    dipPenRibbon(ctx, [{ x: cx + 62, y: shoulderY - 10 }, { x: cx + 96, y: shoulderY + 6 }, { x: cx + 112, y: shoulderY + 28 }], 3.8, PALETTE.sodiumLamp, { taperMode: 'velocity', alpha: 0.68 * rimGain, inkPool: false, jitter: 0.45, seed: boil + 113 });
 
-    // Closed umbrella leaning cleanly against his right arm with brass ferrule dripping every 1.3s!
-    const umbTopX = cx + 132;
-    const umbTopY = shoulderY + 6;
-    const umbTipX = cx + 118;
-    const umbTipY = y + h - 44;
-    dipPenRibbon(ctx, [{ x: umbTopX, y: umbTopY }, { x: umbTipX, y: umbTipY }], 6.2, { r: 22, g: 24, b: 30 }, { taperMode: 'velocity', jitter: 0.35, seed: boil + 117 });
-    // Brass ferrule tip
-    dipPenRibbon(ctx, [{ x: umbTipX, y: umbTipY - 4 }, { x: umbTipX - 3, y: umbTipY + 14 }], 3.2, PALETTE.brassWarm, { taperMode: 'velocity', jitter: 0.2, seed: boil + 119 });
+    // Closed umbrella leaning cleanly against his right arm with gleaming brass ferrule visible ABOVE dialogue strip!
+    const umbTopX = cx + 128;
+    const umbTopY = shoulderY + 4;
+    const umbTipX = cx + 116;
+    const umbTipY = y + h - 82;
+    dipPenRibbon(ctx, [{ x: umbTopX, y: umbTopY }, { x: umbTipX, y: umbTipY }], 5.8, { r: 26, g: 30, b: 38 }, { taperMode: 'velocity', jitter: 0.3, seed: boil + 117 });
+    // Gleaming brass ferrule tip clearly visible in BOTH DIM (04) and SILL (06)!
+    dipPenRibbon(ctx, [{ x: umbTipX, y: umbTipY - 4 }, { x: umbTipX - 3, y: umbTipY + 16 }], 3.6, PALETTE.brassWarm, { taperMode: 'velocity', jitter: 0.15, seed: boil + 119 });
 
     // Every 1.3s a single sodium-lit droplet detaches from the ferrule and flashes down! (Opus Gate 3!)
     const dripPhase = (st.simTime % 1.3) / 1.3;
@@ -431,7 +428,8 @@ function drawAttachedHand(
   baseY: number,
   tapedThumb: boolean,
   rimGain: number,
-  seed: number
+  seed: number,
+  mutedForTitle = false
 ): void {
   const sleeve: Pt[] = [
     { x: hx - 66, y: baseY },
@@ -454,7 +452,12 @@ function drawAttachedHand(
     { x: hx + 34, y: hy + 18 },
     { x: hx - 8, y: hy + 18 },
   ];
-  dryChalkPoly(ctx, handPoly, PALETTE.coldSkin, { underpaint: { r: 78, g: 52, b: 48 }, pressure: 0.86, peek: 0.34, edgeRough: 0.5, boilSeed: seed + 3 });
+  dryChalkPoly(
+    ctx,
+    handPoly,
+    mutedForTitle ? { r: 58, g: 48, b: 41 } : PALETTE.coldSkin,
+    { underpaint: mutedForTitle ? PALETTE.velvetDark : { r: 78, g: 52, b: 48 }, pressure: 0.88, peek: 0.30, edgeRough: 0.5, boilSeed: seed + 3 }
+  );
 
   for (let k = 0; k < 3; k++) {
     const kx = hx + 11 + k * 12;

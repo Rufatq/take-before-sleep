@@ -229,7 +229,7 @@ export const SCRIPTS: Record<string, ScriptSpec> = {
     selfWritten: false,
   },
   n2_halvorsen: {
-    clockText: '03:08',
+    clockText: '02:41',
     hand: 'doctor',
     heading: 'Pulv. antipyret.',
     doseLine: 'one sachet every six hours',

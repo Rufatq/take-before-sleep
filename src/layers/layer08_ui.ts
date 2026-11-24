@@ -94,9 +94,9 @@ export function renderLayer08UI(ctx: CanvasRenderingContext2D, st: GameState, W:
   if (st.intercomSpring.value > 0.08 && st.visitorLines.length > 0) {
     const vis = clamp(st.intercomSpring.value, 0, 1);
     const line = st.visitorLines[Math.min(st.visitorLineIdx, st.visitorLines.length - 1)];
-    const sx = 286;
+    const sx = 280;
     const sy = 402 + (1 - vis) * 16;
-    const sw = 688;
+    const sw = 650; // Ends at x=930 (+12 border = 942), leaving >52px clear depth gap before Valerian cork (x=995)! (Gate 4!)
     const sh = 62;
 
     ctx.save();

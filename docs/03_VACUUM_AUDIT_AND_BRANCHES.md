@@ -50,3 +50,16 @@
      - `stem_night4_knock.wav`: `peak -15.98 dBFS`, crest `15.26 dB`, centroid `933.7 Hz`; crisp laminated-glass knuckle tap interrupting the 95ms acoustic hush.
      - `stem_shutter_dawn.wav`: `peak -15.77 dBFS`, crest `16.08 dB`, centroid `967.5 Hz`; rhythmic metallic corrugated slats over 1.4s -> low stone-sill floor thud -> quiet decay to silence.
      - `stem_anomaly_hush.wav`: `peak -4.06 dBFS`, crest `27.38 dB`, centroid `1798.5 Hz`; true dead hush followed by crisp back-shelf glass clink.
+
+
+---
+
+## 6. Phase 3 Opus Gate 4 Final Micro-Fixes & Standalone Release Verification
+- **Opus Gate 4 (Call 4 of 4 — `docs/opus_gate4_ruling.md`) Applied & Re-Verified Visually:**
+  1. `01_title.png`: Muted Maren's title-screen hand to `#3A3029` so no bright disembodied fist peeks beneath the title shard.
+  2. `02_hatch_nadia_dim.png`: Moved Nadia's two fingertips outside her slicker silhouette over open cold glass (`nx + 132, y + 296`) paired with two soft `#9FB0BF` fog ovals behind them.
+  3. `03_counter_camphor.png`: Set Maren's single silent odd brass coin (`#906936`, 76% scale) 40px apart on the steel tray floor and re-sculpted Camphor balm doses as organic pale-ochre wax dabs on small parchment squares.
+  4. `04_inspect_halvorsen.png` & `06_dawn_packet.png`: Re-sculpted Dr. Halvorsen's silhouette with a 6px-flatter crown cropped at ear line (distinct from Nadia's bob), crisp horizontal `#9CA3A8` silver brow line, elevated gleaming brass umbrella ferrule visible in both DIM and SILL views, and matched Night II script stamp to `02:41`.
+  5. `05_anomaly_rearrangement.png`: Lifted the 5 chalk shelf tallies (`||||` crossed diagonally) to legible `#9EA6AE` against mirrored dark glass.
+  6. `06_dawn_packet.png` & `02/04/06`: Capped the feathered Bayer sill beam softly (`0.17` peak / `0.22` max) + added cool `#4A5868` back-shoulder rim separation on Halvorsen, and trimmed intercom strip width (`x 280..930`) leaving `>52px` depth gap before the Valerian cork.
+- **Standalone Release Packaging (`play/index.html`, `117.36 kB`):** Single-file zero-network playable build compiled from `dist/` (`119.45 kB` JS / `38.26 kB` gz), verified clean against raw anti-cheat scan (zero fonts, zero images/rasters, zero literal anchor leaks) and passed full end-to-end 4-night automated Playwright playthrough with `CONSOLE ERRORS COUNT: 0` and `webglActive: true`.

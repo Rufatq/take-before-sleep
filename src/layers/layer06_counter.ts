@@ -197,14 +197,16 @@ export function renderLayer06Counter(ctx: CanvasRenderingContext2D, st: GameStat
       ctx.lineWidth = 1.5;
       ctx.strokeRect(-14, -7, 28, 14);
     } else if (p.kind === 'camphor') {
-      // Smooth glossy pale-ochre camphor balm lozenge
-      ctx.fillStyle = rgbCss({ r: 226, g: 204, b: 158 }, 0.98);
+      // Translucent pale-ochre camphor balm dab on tiny parchment square (never reads as staring eyes!)
+      ctx.fillStyle = rgbCss({ r: 168, g: 152, b: 122 }, 0.92);
+      ctx.fillRect(-10, -6, 20, 12);
+      ctx.fillStyle = rgbCss({ r: 196, g: 176, b: 136 }, 0.96);
       ctx.beginPath();
-      ctx.ellipse(0, 0, 14, 9.5, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, -1, 7.5, 4.8, -0.18, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = rgbCss(PALETTE.velvetDark, 0.9);
-      ctx.lineWidth = 1.6;
-      ctx.stroke();
+      ctx.strokeStyle = rgbCss(PALETTE.velvetDark, 0.85);
+      ctx.lineWidth = 1.3;
+      ctx.strokeRect(-10, -6, 20, 12);
     } else {
       // Scored chalk Valerian tablet
       ctx.fillStyle = rgbCss(PALETTE.bonePaper, 0.98);

@@ -74,12 +74,13 @@ function renderFeatheredCurbBeam(
         const feather = 14 + 26 * Math.pow(clamp(s, 0, 1), 1.25);
         const edgeFade = 1 - smoothstep(halfW - feather * 0.5, halfW + feather, perp);
         const frontFade = smoothstep(-2, 6, along);
-        const distFade = Math.pow(clamp(1 - s * 0.78, 0, 1), 1.45);
-        const alpha = edgeFade * frontFade * distFade * 0.30;
+        const distFade = Math.pow(clamp(1 - s * 0.82, 0, 1), 1.55);
+        // Cap sill beam softly (0.17 peak) so Dr. Halvorsen's coat silhouette never washes into the lit glass! (Gate 4!)
+        const alpha = edgeFade * frontFade * distFade * 0.17;
 
         if (alpha > 0.004) {
           const b = bayer4(x, y) - 0.5;
-          const aFinal = clamp((alpha + b * 0.08 * clamp(alpha * 3.5, 0, 1)) * gain, 0, 0.42);
+          const aFinal = clamp((alpha + b * 0.06 * clamp(alpha * 3.5, 0, 1)) * gain, 0, 0.22);
           const idx = (y * cw + x) * 4;
           d[idx] = sr;
           d[idx + 1] = sg;
